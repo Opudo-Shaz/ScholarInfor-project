@@ -1,0 +1,62 @@
+input[type="submit"] {
+  transition: all 0.25s ease, color 1ms;
+  text-align: center;
+}
+
+input[type="submit"]:focus {
+  outline: 0;
+}
+
+input[type="submit"].animate {
+  border-radius: 50%;
+  background: transparent;
+  color: transparent;
+  border: 3px solid #337ab7;
+  border-left-color: #ccc;
+  animation: rotating 2s 0.25s linear infinite;
+  animation-delay: 0s;
+  width: 34px;
+  height: 34px;
+}
+
+@keyframes rotating {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.row_bottom {
+  border-bottom: 1px solid black;
+  display: flex;
+  padding: 10px 0;
+}
+
+.row:first-child {
+  border-top: 1px solid black;
+}
+
+.row_bottom div {
+  width: 30%;
+}
+
+.table-striped > tbody > tr:nth-child(odd) > td,
+.table-striped > tbody > tr:nth-child(odd) > th {
+  background-color: red !important;
+}
+.row_bottom_profile {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-right: 15rem;
+  margin-top: 3rem;
+  margin-bottom: 5rem;
+}
+.submit_profile {
+ 
+}
+
+.reset_profile {
+}
