@@ -1,0 +1,40 @@
+/* Your styles for the toggle switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 34px;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px;
+}
+
+/* Style for the moon icon */
+.slider i:nth-child(2) {
+  color: #f1c40f;
+}
+
+/* Style for the sun icon */
+.slider i:nth-child(1) {
+  color: #f39c12;
+  transform: translateX(0);
+  transition: transform 0.4s;
+}
+
+/* Move the sun icon to the right for dark mode */
+#modeToggle:checked + .slider i:nth-child(1) {
+  transform: translateX(26px);
+}

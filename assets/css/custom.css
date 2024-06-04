@@ -29,14 +29,13 @@ input[type="submit"].animate {
 }
 
 .row_bottom {
-  border-bottom: 1px solid black;
   display: flex;
   padding: 10px 0;
 }
 
-.row:first-child {
-  border-top: 1px solid black;
-}
+/* .row:first-child {
+ border-top: 1px solid black;
+} */
 
 .row_bottom div {
   width: 30%;
@@ -54,9 +53,30 @@ input[type="submit"].animate {
   margin-top: 3rem;
   margin-bottom: 5rem;
 }
-.submit_profile {
- 
+
+.error input {
+  border-color: red;
+  border-width: 2px;
 }
 
-.reset_profile {
+.success input {
+  border-color: green;
+  border-width: 2px;
+}
+
+.error span {
+  color: red;
+}
+
+.success span {
+  color: green;
+}
+
+span.error {
+  color: red;
+}
+
+i {
+  font-weight: 900;
+  font-family: "Font Awesome 5 Free";
 }

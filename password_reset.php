@@ -1,6 +1,6 @@
 <?php
-    if(isset($_POST['password-reset']) &amp;&amp; $_POST['email'])
-    {
+if(isset($_POST['password-reset']) && $_POST['email'])
+{
         include "db.php";
          
         $emailId = $_POST['email'];

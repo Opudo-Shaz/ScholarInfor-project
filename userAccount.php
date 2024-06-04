@@ -1,9 +1,16 @@
+<?php 
+ini_set('display_errors', 1);
+
+ini_set('display_startup_errors', 1);
+
+error_reporting(E_ALL);?>
+
 <?php
 // Start session 
 session_start();
 
 // Load and initialize user class 
-include 'User.class.php';
+include_once 'model/User.class.php';
 $user = new User();
 
 $postData = $statusMsg = $valErr = '';
@@ -69,12 +76,30 @@ if (isset($_POST['signupSubmit'])) {
                 'email' => $email,
                 'password' => $password_hash,
             );
+
+
             $insert = $user->insert($userData);
 
             if ($insert) {
                 $status = 'success';
                 $statusMsg = 'Your account has been registered successfully, login to the account.';
                 $postData = '';
+
+                require_once 'model/Role.php';
+                require_once 'model/Permission.php';
+                require_once 'model/PrivilegedUser.php';
+
+                // Assuming $userData contains user data retrieved from somewhere
+                $userEmail = $userData['email'];
+
+                // Get the PrivilegedUser object by user email
+                $privilegedUser = PrivilegedUser::getByEmail($userEmail);
+
+                // Define the role to assign
+                $selectedRoleID = "8";
+
+                // Insert the user's role into the database
+                Role::insertUserRoles($privilegedUser->$id, [$selectedRoleID]);
 
                 $redirectURL = 'index.php';
             } else {
@@ -94,6 +119,7 @@ if (isset($_POST['signupSubmit'])) {
     // Redirect to the home/registration page 
     header("Location: $redirectURL");
 } elseif (isset($_POST['loginSubmit'])) {
+    require_once ('includes/2faAuth.php');
     // Get user's input 
     $postData = $_POST;
     $email = trim($_POST['email']);
@@ -122,10 +148,15 @@ if (isset($_POST['signupSubmit'])) {
         if (!empty($userData)) {
             $status = 'success';
             $statusMsg = 'Welcome ' . $userData['first_name'] . '!';
-            $postData = '';
+            enableTwoFactorAuth($userData['id'], $userData['email']);
+            //$sessData['userLoggedIn'] = TRUE;
+            //$sessData['userID'] = $userData['id'];
 
-            $sessData['userLoggedIn'] = TRUE;
-            $sessData['userID'] = $userData['id'];
+            // Redirect to 2faAuth.php using header redirect
+            header("Location: includes/enter_code.php?userID=" .$userData['id']);
+            exit();
+
+           
         } else {
             $statusMsg = 'Wrong email or password, please try again!';
         }
@@ -133,13 +164,13 @@ if (isset($_POST['signupSubmit'])) {
         $statusMsg = '<p>Please fill all the mandatory fields:</p>' . trim($valErr, '<br/>');
     }
 
-    // Store login status into the SESSION 
+    //Store login status into the SESSION 
     $sessData['postData'] = $postData;
     $sessData['status']['type'] = $status;
     $sessData['status']['msg'] = $statusMsg;
     $_SESSION['sessData'] = $sessData;
 
-    // Redirect to the home page 
+    //Redirect to the home page 
     header("Location: $redirectURL");
 } elseif (!empty($_REQUEST['logoutSubmit'])) {
     // Remove session data 
@@ -157,86 +188,21 @@ if (isset($_POST['signupSubmit'])) {
     // Redirect to the home page 
     header("Location: $redirectURL");
 }
-
-if (isset($_POST['forgotSubmit'])) {
-    //check whether email is empty
-    if (!empty($_POST['email'])) {
-        //check whether user exists in the database
-        $prevCon['where'] = array('email' => $_POST['email']);
-        $prevCon['return_type'] = 'count';
-        $prevUser = $user->getRows($prevCon);
-        if ($prevUser > 0) {
-            //generat unique string
-            $uniqidStr = md5(uniqid(mt_rand()));
-            ;
-
-            //update data with forgot pass code
-            $conditions = array(
-                'email' => $_POST['email']
-            );
-            $data = array(
-                'forgot_pass_identity' => $uniqidStr
-            );
-            $update = $user->update($data, $conditions);
-
-            if ($update) {
-                $resetPassLink = 'http://localhost/fall/resetPassword.php?fp_code=' . $uniqidStr;
-
-                //get user details
-                $con['where'] = array('email' => $_POST['email']);
-                $con['return_type'] = 'single';
-                $userDetails = $user->getRows($con);
-
-                //send reset password email
-                $to = $userDetails['email'];
-                $subject = "Password Update Request";
-                $mailContent = 'Dear ' . $userDetails['first_name'] . ', 
-                <br/>Recently a request was submitted to reset a password for your account. If this was a mistake, just ignore this email and nothing will happen.
-                <br/>To reset your password, visit the following link: <a href="' . $resetPassLink . '">' . $resetPassLink . '</a>
-                <br/><br/>Regards,
-                <br/>CodexWorld';
-                //set content-type header for sending HTML email
-                $headers = "MIME-Version: 1.0" . "\r\n";
-                $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-                //additional headers
-                $headers .= 'From: Harry<harrymuthee254@gmail.com>' . "\r\n";
-                //send email
-                mail($to, $subject, $mailContent, $headers);
-
-                $sessData['status']['type'] = 'success';
-                $sessData['status']['msg'] = 'Please check your e-mail, we have sent a password reset link to your registered email.';
-            } else {
-                $sessData['status']['type'] = 'error';
-                $sessData['status']['msg'] = 'Some problem occurred, please try again.';
-            }
-        } else {
-            $sessData['status']['type'] = 'error';
-            $sessData['status']['msg'] = 'Given email is not associated with any account.';
-        }
-
-    } else {
-        $sessData['status']['type'] = 'error';
-        $sessData['status']['msg'] = 'Enter email to create a new password for your account.';
-    }
-    //store reset password status into the session
-    $_SESSION['sessData'] = $sessData;
-    //redirect to the forgot pasword page
-    header("Location:forgotPassword.php");
-} elseif (isset($_POST['resetSubmit'])) {
+if (isset($_POST['resetSubmit'])) {
     $fp_code = '';
     if (!empty($_POST['password']) && !empty($_POST['confirm_password']) && !empty($_POST['fp_code'])) {
         $fp_code = $_POST['fp_code'];
-        //password and confirm password comparison
+        // Password and confirm password comparison
         if ($_POST['password'] !== $_POST['confirm_password']) {
             $sessData['status']['type'] = 'error';
             $sessData['status']['msg'] = 'Confirm password must match with the password.';
         } else {
-            //check whether identity code exists in the database
+            // Check whether identity code exists in the database
             $prevCon['where'] = array('forgot_pass_identity' => $fp_code);
             $prevCon['return_type'] = 'single';
             $prevUser = $user->getRows($prevCon);
             if (!empty($prevUser)) {
-                //update data with new password
+                // Update data with new password
                 $conditions = array(
                     'forgot_pass_identity' => $fp_code
                 );
@@ -253,16 +219,17 @@ if (isset($_POST['forgotSubmit'])) {
                 }
             } else {
                 $sessData['status']['type'] = 'error';
-                $sessData['status']['msg'] = 'You does not authorized to reset new password of this account.';
+                $sessData['status']['msg'] = 'You are not authorized to reset the new password for this account.';
             }
         }
     } else {
         $sessData['status']['type'] = 'error';
         $sessData['status']['msg'] = 'All fields are mandatory, please fill all the fields.';
     }
-    //store reset password status into the session
+    // Store reset password status into the session
     $_SESSION['sessData'] = $sessData;
     $redirectURL = ($sessData['status']['type'] == 'success') ? 'index.php' : 'resetPassword.php?fp_code=' . $fp_code;
-    //redirect to the login/reset pasword page
+    // Redirect to the login/reset password page
     header("Location:" . $redirectURL);
 }
+?>

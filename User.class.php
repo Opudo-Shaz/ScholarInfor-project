@@ -1,12 +1,12 @@
 <?php
-
 class User
 {
     private $dbHost = "localhost";
     private $dbUsername = "root";
-    private $dbPassword = "";
+    private $dbPassword = "Aris0007@";
     private $dbName = "faweall";
     private $userTbl = "users";
+    private $db;
 
     public function __construct()
     {
@@ -75,7 +75,7 @@ class User
     }
 
     /* 
-     * Insert data into the database 
+     * FInsert data into the database 
      * @param string name of the table 
      * @param array the data for inserting into the table 
      */

@@ -25,34 +25,37 @@ $expected_completion_date = isset($_POST["expected_completion_date"]) ? sanitize
 $student_status = isset($_POST["student_status"]) ? sanitizeInput($_POST["student_status"]) : '';
 $dropout_reason = isset($_POST["dropout_reason"]) ? sanitizeInput($_POST["dropout_reason"]) : null;
 $other_dropout_reason = isset($_POST["other_dropout_reason"]) ? sanitizeInput($_POST["other_dropout_reason"]) : null;
+$created = date("Y-m-d H:i:s");
+$modified = date("Y-m-d H:i:s");
 
-// Prepare the SQL query using prepared statements
 $sql = "INSERT INTO student (first_name, middle_name, last_name, gender,
-    guardian_first_name, guardian_middle_name, guardian_last_name, age, date_of_birth, school_name, expected_completion_date,
-    student_status, dropout_reason, other_dropout_reason)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+guardian_first_name, guardian_middle_name, guardian_last_name, age, date_of_birth,
+school_name, expected_completion_date, student_status, dropout_reason,
+other_dropout_reason, created, modified) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-// Use PDO instead of mysqli
-$stmt = $conn->prepare($sql);
-
-// Bind parameters
-$stmt->bind_param(
-    "ssssssssssssss",
-    $first_name,
-    $middle_name,
-    $last_name,
-    $gender,
-    $guardian_first_name,
-    $guardian_middle_name,
-    $guardian_last_name,
-    $age,
-    $date_of_birth,
-    $school_name,
-    $expected_completion_date,
-    $student_status,
-    $dropout_reason,
-    $other_dropout_reason
-);
+if ($stmt = mysqli_prepare($conn, $sql)) {
+    mysqli_stmt_bind_param(
+        $stmt,
+        "ssssssssssssssss",
+        $first_name,
+        $middle_name,
+        $last_name,
+        $gender,
+        $guardian_first_name,
+        $guardian_middle_name,
+        $guardian_last_name,
+        $age,
+        $date_of_birth,
+        $school_name,
+        $expected_completion_date,
+        $student_status,
+        $dropout_reason,
+        $other_dropout_reason,
+        $created,
+        $modified
+    );
+}
 
 // Execute the statement
 if ($stmt->execute()) {

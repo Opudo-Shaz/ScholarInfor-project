@@ -30,14 +30,18 @@ if (isset($_POST['submit'])) {
         exit();
     } else {
         // insert your values into the database 
-        $sql = "INSERT INTO school(school_name, county, sub_county, school_level) VALUES (?,?,?,?)";
+        $sql = "INSERT INTO school(school_name, phone, email, county, sub_county, school_level, created, modified) VALUES (?,?,?,?,?,?,?,?)";
 
         if ($stmt = mysqli_prepare($conn, $sql)) {
-            mysqli_stmt_bind_param($stmt, "ssss", $school_name, $county, $sub_county, $school_level);
+            mysqli_stmt_bind_param($stmt, "ssssssss", $school_name, $phone, $email, $county, $sub_county, $school_level, $created, $modified);
             $school_name = trim($_REQUEST["school_name"]);
+            $phone = trim($_REQUEST["phone"]);
+            $email = trim($_REQUEST["email"]);
             $county = trim($_REQUEST["county"]);
             $sub_county = trim($_REQUEST["sub_county"]);
             $school_level = trim($_REQUEST["school_level"]);
+            $created = date("Y-m-d H:i:s");
+            $modified = date("Y-m-d H:i:s");
         }
 
 

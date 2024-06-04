@@ -1,5 +1,6 @@
 <?php require_once('includes/dbconnection.php');
-session_start(); ?>
+session_start();
+$pageTitle = "Update Student"; ?>
 
 <!DOCTYPE html>
 
@@ -43,9 +44,22 @@ session_start(); ?>
 
         }
     </script>
+<?php
+    @include "includes/head.php"
+        ?>
 </head>
 
 <body>
+
+    <div class="main-wrapper">
+        <!-- partial:partials/_sidebar.html -->
+        <?php @include "includes/sidebar.php" ?>
+        <!-- partial -->
+
+        <div class="page-wrapper">
+            <!-- partial:partials/_navbar.html -->
+            <?php @include "includes/header.php" ?>
+            <!-- partial -->
     <?php
 
 
@@ -53,6 +67,8 @@ session_start(); ?>
 
 
     $id = $_GET['id'];
+
+    $_SESSION['id'] = $id;
 
 
 
@@ -66,9 +82,9 @@ session_start(); ?>
 
 
     ?>
-    <div class="container">
+    <div class="container" style="margin-top:20px !important;">
 
-        <div class="card mt-4" id="form-body">
+        <div class="card mt-5" id="form-body">
 
             <div class="card-header">
 
@@ -129,7 +145,7 @@ session_start(); ?>
                             <div class="col-sm-4">
                                 <label for="guardianMiddleName">Middle Name</label>
                                 <input type="text" name="guardian_middle_name" id="guardianMiddleName" maxlength="50"
-                                    placeholder="Middle Name" class="form-control" required
+                                    placeholder="Middle Name" class="form-control"
                                     value="<?php echo isset($row['guardian_middle_name']) ? htmlspecialchars($row['guardian_middle_name']) : ''; ?>">
                             </div>
 
@@ -155,7 +171,7 @@ session_start(); ?>
                                 max="100" id="age" placeholder="Age"
                                 value="<?php echo isset($row['age']) ? htmlspecialchars($row['age']) : ''; ?>">
                         </div>
-
+                    
 
                         <div class="mt-3">
                             <label for="schoolName" class="h6">School Name</label>
@@ -172,8 +188,9 @@ session_start(); ?>
                                         $selected = '';
                                         $selectedValue = $row['school_name'];
 
-                                        $optionValue = htmlspecialchars($row1['school_name']);
-                                        $selected = $optionValue === $selectedValue ? 'selected' : '';
+                                        $optionValue = $row1['school_name'];
+                                        $selected = ($optionValue === $selectedValue) ? 'selected' : '';
+                                      
                                         ?>
                                         <option <?php echo $selected; ?> value="<?php echo $optionValue; ?>">
                                             <?php echo $optionValue; ?>
@@ -255,6 +272,24 @@ session_start(); ?>
             </div>
         </div>
     </div>
+        </div>
+    </div>
+    <!-- core:js -->
+    <script src="assets/vendors/core/core.js"></script>
+                                                                                            <!-- endinject -->
+
+                                                                                            <!-- Plugin js for this page -->
+                                                                                            <script src="assets/vendors/flatpickr/flatpickr.min.js"></script>
+                                                                                            <script src="assets/vendors/apexcharts/apexcharts.min.js"></script>
+                                                                                            <!-- End plugin js for this page -->
+
+                                                                                            <!-- inject:js -->
+                                                                                            <script src="assets/vendors/feather-icons/feather.min.js"></script>
+                                                                                            <script src="assets/js/template.js"></script>
+                                                                                            <!-- endinject -->
+
+                                                                                            <!-- Custom js for this page -->
+                                                                                            <script src="assets/js/dashboard-dark.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
      $(function () {

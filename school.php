@@ -2,166 +2,97 @@
 @include("includes/head.php");
 session_start();
 error_reporting(0);
+$pageTitle = "School";
 include('includes/dbconnection.php');
-if (strlen($_SESSION['sessData'] == 0)) {
+$userData = $_SESSION['userData'];
+require_once 'model/Role.php';
+require_once 'model/Permission.php';
+require_once 'model/PrivilegedUser.php';
+$u = PrivilegedUser::getByEmail($userData['email']);
+
+if (empty($userData) || !($u->hasRole("Admin") || $u->hasRole("Editor") || (!$u->hasRole("Super_admin")))) {
+  // If $userData is empty or user doesn't have any of the specified roles, log out the user
+  header('Location: userAccount.php?logoutSubmit=1');
+  exit();
+} else if (strlen($_SESSION['sessData'] == 0)) {
   header('location:logout.php');
 } else {
 
   ?>
 
-  <body>
-    <div class="main-wrapper">
-      <!-- partial:partials/_sidebar.html -->
-      <nav class="sidebar">
-        <div class="sidebar-header">
-          <a href="#" class="sidebar-brand" style="text-decoration: none">
-            <span class="p-3">STUDENT</span>
-          </a>
-          <div class="sidebar-toggler not-active">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-        <div class="sidebar-body">
-          <ul class="nav">
-            <li class="nav-item nav-category">Main</li>
-            <li class="nav-item">
-              <a href="dashboard.html" class="nav-link">
-                <i class="link-icon" data-feather="box"></i>
-                <span class="link-title">Dashboard</span>
-              </a>
-            </li>
-            <li class="nav-item nav-category">Register Students</li>
-            <li class="nav-item">
-              <a class="nav-link" href="student.html" role="button">
-                <i class="link-icon" data-feather="plus"></i>
-                <span class="link-title">Add Students</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="student_list.html" role="button">
-                <i class="link-icon" data-feather="list"></i>
-                <span class="link-title">Students List</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="school.html" class="nav-link">
-                <i class="link-icon" data-feather="home"></i>
-                <span class="link-title">School</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="apps/calendar.html" class="nav-link">
-                <i class="link-icon" data-feather="calendar"></i>
-                <span class="link-title">Calendar</span>
-              </a>
-            </li>
-            <li class="nav-item nav-category">User Account Controls</li>
-            <li class="nav-item">
-              <a class="nav-link" href="users.html">
-                <i class="link-icon" data-feather="users"></i>
-                <span class="link-title">Users</span>
-              </a>
-            </li>
-            <li class="nav-item nav-category">Pages</li>
-            <li class="nav-item">
-              <a class="nav-link" href="profile.html" role="button" aria-expanded="false" aria-controls="general-pages">
-                <i class="link-icon" data-feather="book"></i>
-                <span class="link-title">Profile</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </nav>
+    <head>
+      <title>ScholarInfo --School</title>
+    </head>
+
+    <body>
+  <div class="main-wrapper">
+    <!-- partial:partials/_sidebar.html -->
+    <?php @include "includes/sidebar.php" ?>
+    <!-- partial -->
+
+    <div class="page-wrapper">
+      <!-- partial:partials/_navbar.html -->
+      <?php @include "includes/header.php" ?>
       <!-- partial -->
+      <div class="page-content">
+        <div class="container-fluid">
+          <div class="card p-4 rounded-3">
 
-      <div class="page-wrapper">
-        <!-- partial:partials/_navbar.html -->
-        <nav class="navbar" style="position: fixed">
-          <a href="#" class="sidebar-toggler">
-            <i data-feather="menu"></i>
-          </a>
-          <div class="navbar-content">
-            <ul class="navbar-nav">
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown"
-                  aria-haspopup="true" aria-expanded="false">
-                  <img class="wd-30 ht-30 rounded-circle" src="./assets/images/profile_avatar.png" alt="profile photo" />
-                </a>
-                <div class="dropdown-menu p-0" aria-labelledby="profileDropdown">
-                  <div class="d-flex flex-column align-items-center border-bottom px-5 py-3">
-                    <div class="mb-3">
-                      <img class="wd-80 ht-80 rounded-circle" src="./assets/images/profile_avatar.png"
-                        alt="profile photo" />
-                    </div>
-                    <div class="text-center">
-                      <p class="tx-16 fw-bolder">Amiah Burton</p>
-                      <p class="tx-12 text-muted">amiahburton@gmail.com</p>
-                    </div>
-                  </div>
-                  <ul class="list-unstyled p-1">
-                    <li class="dropdown-item py-2">
-                      <a href="profile.html" class="text-body ms-0">
-                        <i class="me-2 icon-md" data-feather="edit"></i>
-                        <span>Edit Profile</span>
-                      </a>
-                    </li>
+            <h3 class="p-3">ADD INSTITUTION DETAILS</h3>
 
-                    <li class="dropdown-item py-2">
-                      <a href="javascript:;" class="text-body ms-0">
-                        <i class="me-2 icon-md" data-feather="log-out"></i>
-                        <span>Log Out</span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </nav>
-        <!-- partial -->
-        <div class="page-content">
-          <div class="d-flex justify-content-between align-items-center flex-wrap grid-margin">
-            <h3 class="p-3">SCHOOL DETAILS</h3>
-
-            <form role="form" method="post" action="school_process.php">
+            <form role="form" id="schoolForm" method="post" action="school_process.php">
 
               <?php
 
-              // Calculate the current time
-              $currentTime = time();
 
-              // Calculate the time difference in seconds
-              $timeDifference = $currentTime - $_SESSION["startTime"];
+              if (!empty($_SESSION["insertRecord"])) {
 
-              // Check if two minutes (120 seconds) have passed
-              if ($timeDifference >= 20) {
-                unset($_SESSION['insertRecord']);
-                unset($_SESSION['insertRecordError']);
-              } else {
-                if (!empty($_SESSION["insertRecord"])) {
-                  echo '<div class = "alert alert-success alert-dismissible fade show" role="alert">
-                <i data-feather="alert-circle"></i>';
-                  echo $_SESSION["insertRecord"];
-                  echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="btn-close"></button>
-                    </div>';
-                } else if (!empty($_SESSION['insertRecordError'])) {
-                  echo '<div class = "alert alert-danger alert-dismissible fade show" role="alert">
-                  <i data-feather="alert-circle"></i>';
-                  echo $_SESSION["insertRecordError"];
-                  echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="btn-close"></button>
-                      </div>';
+                // Echo the success message
+                echo '<div class = "alert alert-success alert-dismissible fade show" role="alert">
+<i data-feather="alert-circle"></i>';
+                echo $_SESSION["insertRecord"];
+                echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="btn-close"></button>
+</div>';
+                if (isset($_SESSION['insertRecord'])) {
+                  unset($_SESSION['insertRecord']);
+                }
+              } else if (!empty($_SESSION['insertRecordError'])) {
+
+                // Echo the error message
+                echo '<div class = "alert alert-danger alert-dismissible fade show" role="alert">
+<i data-feather="alert-circle"></i>';
+                echo $_SESSION["insertRecordError"];
+                echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="btn-close"></button>
+
+</div>';
+                if (isset($_SESSION['insertRecordError'])) {
+                  unset($_SESSION['insertRecordError']);
                 }
               }
+
 
               ?>
 
               <div class="row align-items-center mb-3 col-lg">
                 <div class="mb-3 ">
-                  <label for="school_name">School Name</label>
+                  <label for="school_name">Institution Name</label>
                   <input type="text" name="school_name" maxlength="50" placeholder="School Name" class="form-control"
                     required>
+                  <div class="text-danger error" id="schoolNameError"></div>
+                </div>
+                <div class="row align-items-center mb-3 col-lg">
+                <div class="mb-3 ">
+                  <label for="school_name">Phone Number</label>
+                  <input type="text" name="phone" maxlength="10" placeholder="Phone Number" class="form-control"
+                    required>
+                  <div class="text-danger error" id="schoolNameError"></div>
+                </div>
+                <div class="row align-items-center mb-3 col-lg">
+                <div class="mb-3 ">
+                  <label for="school_name">Email</label>
+                  <input type="text" name="email" maxlength="100" placeholder="Email" class="form-control"
+                    required>
+                  <div class="text-danger error" id="schoolNameError"></div>
                 </div>
                 <div class="mb-3">
                   <label for="cnty">County</label>
@@ -215,6 +146,7 @@ if (strlen($_SESSION['sessData'] == 0)) {
                     <option id="24" value='West Pokot'>West Pokot</option>
                     <option id="8" value='Wajir'>Wajir</option>
                   </select>
+                  <div class="text-danger error" id="countyError"></div>
                 </div>
                 <div class="mb-3">
                   <label for="sub_cnty">Sub County</label>
@@ -542,18 +474,24 @@ if (strlen($_SESSION['sessData'] == 0)) {
                     <option value="Mathare" />
                     <option value="Njiru" />
                   </select>
+                  <div class="text-danger error" id="subCountyError"></div>
                 </div>
 
                 <fieldset class="mb-3">
-                  <h6 class="form-label">School level</h6>
+                  <h6 class="form-label">Institution level</h6>
                   <label class="form-check-label">
-                    <input type="radio" class="form-check-input" name="school_level" value="Secondary" />
+                    <input type="radio" class="form-check-input ms-5" name="school_level" value="vocational" />
+                    Vocational
+                  </label>
+                  <label class="form-check-label">
+                    <input type="radio" class="form-check-input ms-5" name="school_level" value="Secondary" />
                     Secondary
                   </label>
                   <label class="form-check-label">
                     <input type="radio" class="form-check-input ms-5" name="school_level" value="Primary" />
                     Primary
                   </label>
+                  <div class="text-danger error" id="schoolLevelError"></div>
 
                 </fieldset>
                 <div class="row_bottom ms-5">
@@ -570,92 +508,174 @@ if (strlen($_SESSION['sessData'] == 0)) {
           </div>
         </div>
       </div>
-    </div>
-    </div>
-    <script>
-      // Get the county and subcounty select elements
-      const countySelect = document.getElementById('cnty');
-      const subcountySelect = document.querySelector('select[name="sub_county"]');
+      </div>
+      </div>
+      <script>
+        // Client-side validation
+        document.getElementById('schoolForm').addEventListener('submit', function (event) {
+          var valid = true;
+          var schoolName = document.getElementsByName('school_name')[0].value.trim();
+          var county = document.getElementsByName('county')[0].value;
+          var subCounty = document.getElementsByName('sub_county')[0].value;
+          var schoolLevel = document.querySelector('input[name="school_level"]:checked');
 
-      // Define the county-to-subcounty mapping
-      const countySubcountyMap = {
-        30: ['Baringo South', 'Baringo Central', 'Baringo North', 'Mogotio', 'Eldama Ravine'],
-        36: ['Bomet Central', 'Bomet East', 'Chepalungu', 'Konoin', 'Sotik'],
-        39: ['Bumula', 'Kabuchai', 'Kanduyi', 'Kimilil', 'Mt Elgon', 'Sirisia', 'Tongaren', 'Webuye East', 'Webuye West'],
-        40: ['Budalangi', 'Butula', 'Funyula', 'Nambele', 'Teso North', 'Teso South'],
-        28: ['Keiyo North', 'Keiyo South', 'Marakwet East', 'Marakwet West'],
-        14: ['Manyatta', 'Mbeere North', 'Mbeere South', 'Runyenjes'],
-        7: ['Daadab', 'Fafi', 'Garissa', 'Hulugho', 'Ijara', 'Lagdera Balambala'],
-        43: ['Homa Bay Town', 'Kabondo', 'Karachwonyo', 'Kasipul', 'Mbita', 'Ndhiwa', 'Rangwe', 'Suba'],
-        11: ['Central', 'Garba Tula', 'Kina', 'Merit', 'Oldonyiro', 'Sericho'],
-        34: ['Isinya', 'Kajiado Central', 'Kajiado North', 'Loitokitok', 'Mashuuru'],
-        37: ['Butere', 'Kakamega Central', 'Kakamega East', 'Kakamega North', 'Kakamega South', 'Khwisero', 'Lugari', 'Lukuyani', 'Lurambi', 'Matete', 'Mumias', 'Mutungu', 'Navakholo'],
-        35: ['Ainamoi', 'Belgut', 'Bureti', 'Kipkelion East', 'Kipkelion West', 'Soin Sigowet'],
-        22: ['Gatundu North', 'Gatundu South', 'Githunguri', 'Juja', 'Kabete', 'Kiambaa', 'Kiambu', 'Kikuyu', 'Limuru', 'Ruiru', 'Thika Town', 'Lari'],
-        3: ['Genzw', 'Kaloleni', 'Kilifi North', 'Kilifi South', 'Magarini', 'Malindi', 'Rabai'],
-        20: ['Kirinyaga Central', 'Kirinyaga East', 'Kirinyaga West', 'Mwea East', 'Mwea West'],
-        45: ['Gucha', 'Gucha South', 'Kenyenya', 'Kisii Central', 'Kisii South', 'Kitutu Central', 'Marani', 'Masaba South', 'Nyamache', 'Sameta'],
-        42: ['Kisumu Central', 'Kisumu East', 'Kisumu West', 'Mohoroni', 'Nyakach', 'Nyando', 'Seme'],
-        15: ['Ikutha', 'Katulani', 'Kisasi', 'Kitui Central', 'Kitui West', 'Lower Yatta', 'Matiyani', 'Migwani', 'Mutitu', 'Mutomo', 'Muumonikyusu', 'Mwingi Central', 'Mwingi East', 'Nzambani', 'Tseikuru'],
-        2: ['Kinango', 'Lungalunga', 'Msambweni', 'Mutuga'],
-        31: ['Laikipia Central', 'Laikipia East', 'Laikipia North', 'Laikipia West', 'Nyahururu'],
-        5: ['Lamu East', 'Lamu West'],
-        16: ['Kathiani', 'Machakos Town', 'Masinga', 'Matungulu', 'Mavoko', 'Mwala', 'Yatta'],
-        17: ['Kaiti', 'Kibwei West', 'Kibwezi East', 'Kilome', 'Makueni', 'Mbooni'],
-        9: ['Banissa', 'Lafey', 'Mandera East', 'Mandera North', 'Mandera South', 'Mandera West'],
-        10: ['Laisamis', 'Moyale', 'North Hor', 'Saku'],
-        12: ['Buuri', 'Igembe Central', 'Igembe North', 'Igembe South', 'Imenti Central', 'Imenti North', 'Imenti South', 'Tigania East', 'Tigania West'],
-        44: ['Awendo', 'Kuria East', 'Kuria West', 'Mabera', 'Ntimaru', 'Rongo', 'Suna East', 'Suna West', 'Uriri'],
-        1: ['Changamwe', 'Jomvu', 'Kisauni', 'Likoni', 'Mvita', 'Nyali'],
-        21: ['Gatanga', 'Kahuro', 'Kandara', 'Kangema', 'Kigumo', 'Kiharu', 'Mathioya', 'Murang’a South'],
-        47: ['Dagoretti North ', 'Dagoretti South ', 'Embakasi Central ', 'Embakasi East', 'Embakasi North ', 'Embakasi South ', 'Embakasi West ', 'Kamukunji ', 'Kasarani ', 'Kibra ', 'Lang\'ata ', 'Makadara ', 'Mathare ', 'Roysambu ', 'Ruaraka ', 'Starehe ', 'Westlands '],
-        32: ['Bahati', 'Gilgil', 'Kuresoi North', 'Kuresoi South', 'Molo', 'Naivasha', 'Nakuru Town East', 'Nakuru Town West', 'Njoro', 'Rongai', 'Subukia'],
-        29: ['Aldai', 'Chesumei', 'Emgwen', 'Mosop', 'Namdi Hills', 'Tindiret'],
-        33: ['Narok East', 'Narok North', 'Narok South', 'Narok West', 'Transmara East', 'Transmara West'],
-        46: ['Borabu', 'Manga', 'Masaba North', 'Nyamira North', 'Nyamira South'],
-        18: ['Kinangop', 'Kipipiri', 'Ndaragwa', 'Ol Kalou', 'Ol Joro Orok'],
-        19: ['Kieni East', 'Kieni West', 'Mathira East', 'Mathira West', 'Mkurweni', 'Nyeri Town', 'Othaya', 'Tetu'],
-        25: ['Samburu East', 'Samburu North', 'Samburu West'],
-        41: ['Alego Usonga', 'Bondo', 'Gem', 'Rarieda', 'Ugenya', 'Unguja'],
-        6: ['Mwatate', 'Taveta', 'Voi', 'Wundanyi'],
-        4: ['Bura', 'Galole', 'Garsen'],
-        13: ['Chuka', 'Igambangobe', 'Maara', 'Muthambi', 'Tharaka North', 'Tharaka South'],
-        26: ['Cherangany', 'Endebess', 'Kiminini', 'Kwanza', 'Saboti'],
-        23: ['Loima', 'Turkana Central', 'Turkana East', 'Turkana North', 'Turkana South'],
-        27: ['Ainabkoi', 'Kapseret', 'Kesses', 'Moiben', 'Soy', 'Turbo'],
-        38: ['Emuhaya', 'Hamisi', 'Luanda', 'Sabatia', 'Vihiga'],
-        8: ['Eldas', 'Tarbaj', 'Wajir East', 'Wajir North', 'Wajir South', 'Wajir West'],
-        24: ['Central Pokot', 'North Pokot', 'Pokot South', 'West Pokot']
-      };
-
-
-
-
-      // Event listener for county select change
-      countySelect.addEventListener('change', function () {
-        // Get the selected county option ID
-        const selectedCountyId = countySelect.options[countySelect.selectedIndex].id;
-
-        // Clear the subcounty options
-        subcountySelect.innerHTML = '';
-
-        // Populate the subcounty options based on the selected county
-        if (countySubcountyMap.hasOwnProperty(selectedCountyId)) {
-          const subcounties = countySubcountyMap[selectedCountyId];
-          for (let subcounty of subcounties) {
-            const option = document.createElement('option');
-            option.value = subcounty;
-            option.textContent = subcounty;
-            subcountySelect.appendChild(option);
+          // Clear previous error messages
+          var errorDivs = document.getElementsByClassName('error');
+          for (var i = 0; i < errorDivs.length; i++) {
+            errorDivs[i].innerHTML = '';
           }
+
+          if (schoolName === '') {
+            document.getElementById('schoolNameError').innerHTML = 'School Name is required.';
+            valid = false;
+          }
+
+          if (county === 'County' || county === '') {
+            document.getElementById('countyError').innerHTML = 'County is required.';
+            valid = false;
+          }
+
+          if (subCounty === '' || subCounty === 'Select County First') {
+            document.getElementById('subCountyError').innerHTML = 'Sub County is required.';
+            valid = false;
+          }
+
+          if (!schoolLevel) {
+            document.getElementById('schoolLevelError').innerHTML = 'Please select School Level.';
+            valid = false;
+          }
+
+          if (!valid) {
+            event.preventDefault();
+          }
+        });
+        var inputFields = document.querySelectorAll('input, select');
+        for (var i = 0; i < inputFields.length; i++) {
+          inputFields[i].addEventListener('change', function () {
+            var fieldName = this.getAttribute('name');
+            var errorDiv = document.getElementById(fieldName + 'Error');
+            if (errorDiv) {
+              errorDiv.innerHTML = '';
+            }
+          });
         }
-      });
+        document.getElementsByName('county')[0].addEventListener('change', function () {
+          document.getElementById('subCountyError').innerHTML = '';
+        });
+
+        // Event listener to clear School Level error when radio buttons change
+        var schoolLevelRadios = document.querySelectorAll('input[name="school_level"]');
+        for (var i = 0; i < schoolLevelRadios.length; i++) {
+          schoolLevelRadios[i].addEventListener('change', function () {
+            document.getElementById('schoolLevelError').innerHTML = '';
+          });
+        }
+      </script>
 
 
-    </script>
+
+      <script>
+        // Get the county and subcounty select elements
+        const countySelect = document.getElementById('cnty');
+        const subcountySelect = document.querySelector('select[name="sub_county"]');
+
+        // Define the county-to-subcounty mapping
+        const countySubcountyMap = {
+          30: ['Baringo South', 'Baringo Central', 'Baringo North', 'Mogotio', 'Eldama Ravine'],
+          36: ['Bomet Central', 'Bomet East', 'Chepalungu', 'Konoin', 'Sotik'],
+          39: ['Bumula', 'Kabuchai', 'Kanduyi', 'Kimilil', 'Mt Elgon', 'Sirisia', 'Tongaren', 'Webuye East', 'Webuye West'],
+          40: ['Budalangi', 'Butula', 'Funyula', 'Nambele', 'Teso North', 'Teso South'],
+          28: ['Keiyo North', 'Keiyo South', 'Marakwet East', 'Marakwet West'],
+          14: ['Manyatta', 'Mbeere North', 'Mbeere South', 'Runyenjes'],
+          7: ['Daadab', 'Fafi', 'Garissa', 'Hulugho', 'Ijara', 'Lagdera Balambala'],
+          43: ['Homa Bay Town', 'Kabondo', 'Karachwonyo', 'Kasipul', 'Mbita', 'Ndhiwa', 'Rangwe', 'Suba'],
+          11: ['Central', 'Garba Tula', 'Kina', 'Merit', 'Oldonyiro', 'Sericho'],
+          34: ['Isinya', 'Kajiado Central', 'Kajiado North', 'Loitokitok', 'Mashuuru'],
+          37: ['Butere', 'Kakamega Central', 'Kakamega East', 'Kakamega North', 'Kakamega South', 'Khwisero', 'Lugari', 'Lukuyani', 'Lurambi', 'Matete', 'Mumias', 'Mutungu', 'Navakholo'],
+          35: ['Ainamoi', 'Belgut', 'Bureti', 'Kipkelion East', 'Kipkelion West', 'Soin Sigowet'],
+          22: ['Gatundu North', 'Gatundu South', 'Githunguri', 'Juja', 'Kabete', 'Kiambaa', 'Kiambu', 'Kikuyu', 'Limuru', 'Ruiru', 'Thika Town', 'Lari'],
+          3: ['Genzw', 'Kaloleni', 'Kilifi North', 'Kilifi South', 'Magarini', 'Malindi', 'Rabai'],
+          20: ['Kirinyaga Central', 'Kirinyaga East', 'Kirinyaga West', 'Mwea East', 'Mwea West'],
+          45: ['Gucha', 'Gucha South', 'Kenyenya', 'Kisii Central', 'Kisii South', 'Kitutu Central', 'Marani', 'Masaba South', 'Nyamache', 'Sameta'],
+          42: ['Kisumu Central', 'Kisumu East', 'Kisumu West', 'Mohoroni', 'Nyakach', 'Nyando', 'Seme'],
+          15: ['Ikutha', 'Katulani', 'Kisasi', 'Kitui Central', 'Kitui West', 'Lower Yatta', 'Matiyani', 'Migwani', 'Mutitu', 'Mutomo', 'Muumonikyusu', 'Mwingi Central', 'Mwingi East', 'Nzambani', 'Tseikuru'],
+          2: ['Kinango', 'Lungalunga', 'Msambweni', 'Mutuga'],
+          31: ['Laikipia Central', 'Laikipia East', 'Laikipia North', 'Laikipia West', 'Nyahururu'],
+          5: ['Lamu East', 'Lamu West'],
+          16: ['Kathiani', 'Machakos Town', 'Masinga', 'Matungulu', 'Mavoko', 'Mwala', 'Yatta'],
+          17: ['Kaiti', 'Kibwei West', 'Kibwezi East', 'Kilome', 'Makueni', 'Mbooni'],
+          9: ['Banissa', 'Lafey', 'Mandera East', 'Mandera North', 'Mandera South', 'Mandera West'],
+          10: ['Laisamis', 'Moyale', 'North Hor', 'Saku'],
+          12: ['Buuri', 'Igembe Central', 'Igembe North', 'Igembe South', 'Imenti Central', 'Imenti North', 'Imenti South', 'Tigania East', 'Tigania West'],
+          44: ['Awendo', 'Kuria East', 'Kuria West', 'Mabera', 'Ntimaru', 'Rongo', 'Suna East', 'Suna West', 'Uriri'],
+          1: ['Changamwe', 'Jomvu', 'Kisauni', 'Likoni', 'Mvita', 'Nyali'],
+          21: ['Gatanga', 'Kahuro', 'Kandara', 'Kangema', 'Kigumo', 'Kiharu', 'Mathioya', 'Murang’a South'],
+          47: ['Dagoretti North ', 'Dagoretti South ', 'Embakasi Central ', 'Embakasi East', 'Embakasi North ', 'Embakasi South ', 'Embakasi West ', 'Kamukunji ', 'Kasarani ', 'Kibra ', 'Lang\'ata ', 'Makadara ', 'Mathare ', 'Roysambu ', 'Ruaraka ', 'Starehe ', 'Westlands '],
+          32: ['Bahati', 'Gilgil', 'Kuresoi North', 'Kuresoi South', 'Molo', 'Naivasha', 'Nakuru Town East', 'Nakuru Town West', 'Njoro', 'Rongai', 'Subukia'],
+          29: ['Aldai', 'Chesumei', 'Emgwen', 'Mosop', 'Namdi Hills', 'Tindiret'],
+          33: ['Narok East', 'Narok North', 'Narok South', 'Narok West', 'Transmara East', 'Transmara West'],
+          46: ['Borabu', 'Manga', 'Masaba North', 'Nyamira North', 'Nyamira South'],
+          18: ['Kinangop', 'Kipipiri', 'Ndaragwa', 'Ol Kalou', 'Ol Joro Orok'],
+          19: ['Kieni East', 'Kieni West', 'Mathira East', 'Mathira West', 'Mkurweni', 'Nyeri Town', 'Othaya', 'Tetu'],
+          25: ['Samburu East', 'Samburu North', 'Samburu West'],
+          41: ['Alego Usonga', 'Bondo', 'Gem', 'Rarieda', 'Ugenya', 'Unguja', 'Yala'],
+          6: ['Mwatate', 'Taveta', 'Voi', 'Wundanyi'],
+          4: ['Bura', 'Galole', 'Garsen'],
+          13: ['Chuka', 'Igambangobe', 'Maara', 'Muthambi', 'Tharaka North', 'Tharaka South'],
+          26: ['Cherangany', 'Endebess', 'Kiminini', 'Kwanza', 'Saboti'],
+          23: ['Loima', 'Turkana Central', 'Turkana East', 'Turkana North', 'Turkana South'],
+          27: ['Ainabkoi', 'Kapseret', 'Kesses', 'Moiben', 'Soy', 'Turbo'],
+          38: ['Emuhaya', 'Hamisi', 'Luanda', 'Sabatia', 'Vihiga'],
+          8: ['Eldas', 'Tarbaj', 'Wajir East', 'Wajir North', 'Wajir South', 'Wajir West'],
+          24: ['Central Pokot', 'North Pokot', 'Pokot South', 'West Pokot']
+        };
 
 
 
-    <?php @include("includes/footer.php") ?>
+
+        // Event listener for county select change
+        countySelect.addEventListener('change', function () {
+          // Get the selected county option ID
+          const selectedCountyId = countySelect.options[countySelect.selectedIndex].id;
+
+          // Clear the subcounty options
+          subcountySelect.innerHTML = '';
+
+          // Populate the subcounty options based on the selected county
+          if (countySubcountyMap.hasOwnProperty(selectedCountyId)) {
+            const subcounties = countySubcountyMap[selectedCountyId];
+            for (let subcounty of subcounties) {
+              const option = document.createElement('option');
+              option.value = subcounty;
+              option.textContent = subcounty;
+              subcountySelect.appendChild(option);
+            }
+          }
+        });
+
+
+      </script>
+      <!-- core:js -->
+      <script src="assets/vendors/core/core.js"></script>
+      <!-- endinject -->
+
+      <!-- Plugin js for this page -->
+      <script src="assets/vendors/flatpickr/flatpickr.min.js"></script>
+      <script src="assets/vendors/apexcharts/apexcharts.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+      <!-- End plugin js for this page -->
+
+      <!-- inject:js -->
+      <script src="assets/vendors/feather-icons/feather.min.js"></script>
+      <script src="assets/js/template.js"></script>
+      <!-- endinject -->
+
+      <!-- Custom js for this page -->
+      <script src="assets/js/dashboard-dark.js"></script>
+      <!-- End custom js for this page -->
+
+
+
     <?php
 } ?>
