@@ -7,23 +7,25 @@ error_reporting(E_ALL);?>
 
 <?php
 session_start();
-
-
 $pageTitle = "Dashboard";
 $userData = $_SESSION['userData'];
 
-require_once 'model/Role.php';
-require_once 'model/Permission.php';
-require_once 'model/PrivilegedUser.php';
-$u = PrivilegedUser::getByEmail($userData['email']);
+    require_once 'model/Role.php';
+    require_once 'model/Permission.php';
+    require_once 'model/PrivilegedUser.php';
 
-if (empty($userData) || !($u->hasRole("Admin") || $u->hasRole("Editor") || $u->hasRole("User") || $u->hasRole("Super_admin"))) {
+    $u = PrivilegedUser::getByEmail($userData['email']);
+
+if (isset($userData) || empty($userData) || !($u->hasRole("Admin") || $u->hasRole("Editor") || $u->hasRole("User") || $u->hasRole("Super_admin"))) {
     // If $userData is empty or user doesn't have any of the specified roles, log out the user
     // header('Location: userAccount.php?logoutSubmit=1');
     // exit();
+   
+
 } else if (strlen($_SESSION['sessData'] == 0)) {
     header('location:logout.php');
 } else {
+
     ?>
 
         <body>
